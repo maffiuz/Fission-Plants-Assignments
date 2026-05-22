@@ -121,7 +121,7 @@ def solver() -> tuple:
             for z in z_integr:
                 integrand_vector.append(integrand(z))
                 
-            # Using trapezoidal integration because properties are defined at fixed nodes
+            # Using trapezoidal integration since properties are defined at fixed nodes
             flow_quality[i] = integrate.trapezoid(integrand_vector,z_integr)
             
             # Slip ratio correaltion
@@ -139,14 +139,10 @@ def solver() -> tuple:
     A = 1.425e-2 / 2
     
     # Integral term with outer cladding temp
-    f_T_CO = A*T_co + B*T_co**2/2
-    C = q_rad_cladding + f_T_CO
+    kT_co = [A*Tz**2 + B*Tz for Tz in T_co]
+    C = [- kTz - qz for kTz,qz in zip(kT_co, q_rad_cladding)]
     
-    T_ci = []
-    for Cz in C:
-        T_ci.append(-B + np.sqrt(B**2 - 4*A*Cz)/2/A)
-        
-    print(zip(T_co,T_ci))
+    T_ci = list((-B + np.sqrt(B**2 - 4 * A * Cz))/2/A for Cz in C)
 
     #fuel pellet surface temperature, dobbiamo iterare ipotesi su temperatura media del fuel e ottenere la temperatura di superficie del fuel
     T_f_avg_guess = 550 #°C
@@ -154,5 +150,4 @@ def solver() -> tuple:
     #gap conductance
 
 
-    return z_vector, [Coolant_profs['T'], T_co], z_NB, [T_co_SP, T_co_JL], void_fraction, flow_quality, integrand
-
+    return z_vector, [Coolant_profs['T'], T_co, T_ci], z_NB, z_D, [T_co_SP, T_co_JL], void_fraction
