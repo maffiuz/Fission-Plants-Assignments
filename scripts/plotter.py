@@ -3,7 +3,7 @@ import data.assignment_data as dh
 import numpy as np
 
 def plotter(results: tuple):
-    z, T_profiles, z_scb, T_co_methods = results
+    z, T_profiles, z_scb, T_co_methods, void_fraction, x = results
     
     plt.figure()
     plt.plot(np.transpose(T_profiles),z,label=['Coolant','Cladding out'])
@@ -24,6 +24,14 @@ def plotter(results: tuple):
     plt.ylabel('Axial coordinate [m]')
     plt.yticks([-dh.H/2,-1,0,1,dh.H/2],['-H/2','-1','0','1','H/2'])
     plt.ylim((-dh.H/2,dh.H/2)) 
+    
+    plt.figure()
+    plt.plot(z, void_fraction)
+    plt.grid()
+    
+    plt.figure()
+    plt.plot(z, x)
+    plt.grid()
       
     plt.show()
         
