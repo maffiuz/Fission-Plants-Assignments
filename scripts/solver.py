@@ -70,7 +70,7 @@ def solver() -> tuple:
 
     # Outer cladding temperature
     C = 0.042*dh.pitch/dh.D_fuel_road - 0.024
-    D_eq = 4*np.sqrt(A_subchannel/cs.pi)
+    D_eq = 4*dh.pitch/cs.pi/dh.D_fuel_road-dh.D_fuel_road
     Coolant_profs.update({'Nu':[C*pow((G_avg*D_eq/mu),0.8)*pow((Pr),0.4) for mu,Pr in zip(Coolant_profs['mu'], Coolant_profs['Pr'])]})
     Coolant_profs.update({'h':[Nu*k/D_eq for Nu,k in zip(Coolant_profs['Nu'], Coolant_profs['k'])]})
     
@@ -84,7 +84,71 @@ def solver() -> tuple:
     z_scb = next(z[i] for i in range(len(z)) if T_co_SP[i] > T_co_JL[i])
     
     # Finding the detachment
-    Tl_D = [(T_sat - q/5/h) for q,h in zip(q2_hot_subchannel, Coolant_profs['h'])]
-    z_D = next((z[i] for i in range(len(z)) if Coolant_profs['T'][i] > Tl_D[i]), 0)
+    #Tl_D = [(T_sat - q/5/h) for q,h in zip(q2_hot_subchannel, Coolant_profs['h'])]
+    #z_D = next((z[i] for i in range(len(z)) if Coolant_profs['T'][i] > Tl_D[i]), 0)
     
+    #suggerimento gemini per avere la temperatura di distacco 
+    z_D_esatta=0
+    T_distacco_esatta=0
+    # 1. Calcoli l'intero profilo delle temperature (lista)
+    Tl_D = [(T_sat - q/5/h) for q,h in zip(q2_hot_subchannel, Coolant_profs['h'])]
+
+    # 2. Trovi l'INDICE del primo punto in cui si verifica il distacco
+    # (Se non lo trova, restituisce None per evitare errori)
+    indice_distacco = next((i for i in range(len(z)) if Coolant_profs['T'][i] > Tl_D[i]), None)
+
+    # 3. Estrai i due valori singoli che ti interessano
+    if indice_distacco is not None:
+        z_D_esatta = z[indice_distacco]
+        T_distacco_esatta = Tl_D[indice_distacco]
+    else:
+        # Caso in cui non c'è distacco nel canale
+        z_D_esatta = 0
+        T_distacco_esatta = None
+        
+    # FLow quality after the detachment, using the bowring-Rouhani model
+
+    #new working domain 
+    
+    z_range = z+[0]
+    
+    #constant values respect to integral, we don't consider pressure drop along z?
+
+    perimeter = cs.pi * dh.D_fuel_road
+    mass_flow_subchannel = G_avg * A_subchannel
+    H_fg = steam_sat.enthalpy - water_sat.enthalpy
+    #enthalpy_sat_water già c'è 
+    density_sat_steam = steam_sat.density
+    #steam properties
+
+    #T_sat già c'è
+    x = 0
+    alfa_slip_ratio = []
+    for i in range(len(z_range)):
+        if z_range[i] >= z_D_esatta:
+            dz = - z_range[i] + z_range[i+1]
+            eps_Rouhani =  water.with_state(Input.temperature(Coolant_profs['T'][i]), Input.pressure(dh.p_coolant)).density / steam_sat.density/H_fg*(enthalpy_sat_water - enthalpy(z_range[i]))
+            q_sp = enthalpy(z_range[i])*mass_flow_subchannel*(T_sat - Coolant_profs['T'][i])
+            q2_hot_subchannel_i = qv(z_range[i]) * (dh.D_fuel_pellet**2/4) / (dh.D_fuel_pellet)    # W/m2 - total heat in a small cylinder dz / surface area
+            x_i = (q2_hot_subchannel_i-q_sp)/(1+eps_Rouhani)*dz
+            x += x_i
+            alfa_i = x/(x+(1-x)*pow(density_sat_water/water.with_state(Input.temperature(Coolant_profs['T'][i]), Input.pressure(dh.p_coolant)).density, -2/3))
+            alfa_slip_ratio.append(alfa_i)
+    flow_quality_Rouhani = x*perimeter/(mass_flow_subchannel*H_fg)
+
+    #void fraction 
+    #linear variation of void fraction, maurer correlation to obtain the void fraction at the detachment point
+    R_d = 2.37E-3/pow(dh.pressure_coolant, 0.237)
+    delta = 0.0666*R_d
+    alfa_maurer = 4-delta/D_eq
+    #inner cladding temperature 
+    #approx the temperature variation as linear.
+    k_cl=[qv(z[i])*A_subchannel/(2*CS.pi)*cs.ln(dh.dimeter_fuel_road/(dh.dimeter_fuel_road-2*dh.t_cladding)) for i in range(len(z))]
+    T_in_cladding = [T_co[i] + (qv(z[i])*dh.t_cladding**2/K_cl[i]) for i in range(len(z))] #rivedere l'uso del power density
+    #fuel pellet surface temperature, dobbiamo iterare ipotesi su temperatura media del fuel e ottenere la temperatura di superficie del fuel
+    T_f_avg_guess = 550 #°C
+    
+    #gap conductance
+
+
     return z, [Coolant_profs['T'], T_co], z_scb, [T_co_SP, T_co_JL]
