@@ -2,7 +2,7 @@ from pyfluids import Fluid, FluidsList, Input
 from scipy import constants as cs
 import scipy.integrate as integrate
 import numpy as np
-import data.pipe_handler as pp
+# import data.pipe_handler as pp
 import data.assignment_data as dh
 # import scripts.correlations as rr
 
@@ -11,23 +11,29 @@ def solver() -> tuple:
     
     # Disceretize the z domain
     z_vector = np.linspace(-dh.H/2, dh.H/2, dh.n_points)
-    dz = z_vector[1]-z_vector[0]
     
     # Core extrapolated height
     He = dh.H + 1.42 * dh.lambda_tr + 2 * dh.delta
     
+    # ================================================
+    # 1- Average volumetric heat generation rate
     # Total fuel volume
-    Fuel_pellet_cross_sec = dh.D_fuel_pellet**2 / 4 * cs.pi
-    V_fuel = dh.N_rods * Fuel_pellet_cross_sec * dh.H
+    Base_area_fuel_pellet = dh.D_fuel_pellet**2 / 4 * cs.pi
+    V_fuel = dh.N_rods * Base_area_fuel_pellet * dh.H
     
-    # Average heat generation rate
     qv_avg = dh.P * dh.heat_in_fuel / V_fuel
+    
+    # ================================================
+    # 2- Maximum volumetric heat generation rate
     qv_max = qv_avg * dh.Fq
     qv = lambda z: qv_max*np.cos(cs.pi*z/He)
     
-    # Average coolant mass velocity
+    # ================================================
+    # 3- Average coolant mass velocity
     G_avg = dh.mass_flow_coolant / dh.A_flow_coolant
     
+    # ================================================
+    # 4- Coolant specific enthalpy and temperature profiles
     # Coolant definition
     water = Fluid(FluidsList.Water)
     coolant_in = water.with_state(Input.temperature(dh.T_in_coolant), Input.pressure(dh.p_coolant))
@@ -39,7 +45,7 @@ def solver() -> tuple:
     perimeter_fuel_road = cs.pi * dh.D_fuel_road
     
     # Enthalpy profile in the coolant (qv_max in MW)
-    enthalpy = lambda z: enthalpy_in + 1.0267*(qv_max * Fuel_pellet_cross_sec * He)/(mass_flow_subchannel * cs.pi)*\
+    enthalpy = lambda z: enthalpy_in + 1.0267*(qv_max * Base_area_fuel_pellet * He)/(mass_flow_subchannel * cs.pi)*\
         (np.sin(cs.pi * z / He) +  np.sin(cs.pi * dh.H/2/He))
     
     # Saturation conditions
@@ -49,7 +55,7 @@ def solver() -> tuple:
     enthalpy_sat_steam = steam_sat.enthalpy
     T_sat = water_sat.temperature
     
-    # Temperature profile in the coolant
+    # Temperature dependent profiles in the coolant
     Coolant_profs = {
         'T':[],
         'mu':[],
@@ -59,6 +65,7 @@ def solver() -> tuple:
     }
     
     for enth in enthalpy(z_vector):
+        # Check for saturation conditions
         if enth < enthalpy_sat_water:
             coolant = water.with_state(Input.enthalpy(enth), Input.pressure(dh.p_coolant))
         else:
@@ -69,17 +76,19 @@ def solver() -> tuple:
         Coolant_profs['Pr'].append(coolant.prandtl)
         Coolant_profs['k'].append(coolant.conductivity)
         Coolant_profs['rho'].append(coolant.density)
-        
-    # Equilibrium quality profile
+    
+    # ================================================
+    # 5- Equilibrium quality profile
     x_eq = (enthalpy(z_vector)-enthalpy_sat_water)/(enthalpy_sat_steam-enthalpy_sat_water)
 
-    # Outer cladding temperature
+    # ================================================    
+    # 6- Cladding outer wall temperature
     C = 0.042*dh.pitch/dh.D_fuel_road - 0.024
     D_eq = 4*dh.pitch**2/cs.pi/dh.D_fuel_road-dh.D_fuel_road
     Coolant_profs.update({'Nu':[C*pow((G_avg*D_eq/mu),0.8)*pow((Pr),0.4) for mu,Pr in zip(Coolant_profs['mu'], Coolant_profs['Pr'])]})
     Coolant_profs.update({'h':[Nu*k/D_eq for Nu,k in zip(Coolant_profs['Nu'], Coolant_profs['k'])]})
     
-    q2_hot_subchannel = qv(z_vector) * (dh.D_fuel_pellet/4)   # W/m2 - total heat in a small cylinder dz / surface area
+    q2_hot_subchannel = qv(z_vector)/4 * (dh.D_fuel_pellet**2/dh.D_fuel_road)   # W/m2 - total heat in a small cylinder dz / surface area
     T_co_SP = [(T + q/h) for q,T,h in zip(q2_hot_subchannel, Coolant_profs['T'], Coolant_profs['h'])]      # Single phase convection
     T_co_JL = [(T_sat + 25*pow((q*1e-6),0.25)*np.exp(-dh.p_coolant*1e-5/62)) for q in q2_hot_subchannel]   # Jens-Lottes correlation
     
@@ -92,7 +101,7 @@ def solver() -> tuple:
     Tl_D = [(T_sat - q/5/h) for q,h in zip(q2_hot_subchannel, Coolant_profs['h'])]
     z_D = next((z_vector[i] for i in range(len(z_vector)) if Coolant_profs['T'][i] > Tl_D[i]), 0)
         
-    # Flow quality after the detachmennt and void fraction
+    # Flow quality after the detachment and void fraction
     # Latent evaporation enthalpy
     H_fg = enthalpy_sat_steam - enthalpy_sat_water
 
@@ -143,11 +152,5 @@ def solver() -> tuple:
     C = [- kTz - qz for kTz,qz in zip(kT_co, q_rad_cladding)]
     
     T_ci = list((-B + np.sqrt(B**2 - 4 * A * Cz))/2/A for Cz in C)
-
-    #fuel pellet surface temperature, dobbiamo iterare ipotesi su temperatura media del fuel e ottenere la temperatura di superficie del fuel
-    T_f_avg_guess = 550 #°C
-    
-    #gap conductance
-
 
     return z_vector, [Coolant_profs['T'], T_co, T_ci], z_NB, z_D, [T_co_SP, T_co_JL], void_fraction

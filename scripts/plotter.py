@@ -26,6 +26,7 @@ def plotter(results: tuple):
     plt.ylabel('Axial coordinate [m]')
     plt.yticks([-dh.H/2,-1,0,1,dh.H/2],['-H/2','-1','0','1','H/2'])
     plt.ylim((-dh.H/2,dh.H/2)) 
+    plt.xlim((260,380))
     
     plt.figure()
     plt.title('Coolant void fraction due to boiling')
