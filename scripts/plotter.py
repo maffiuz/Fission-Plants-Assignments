@@ -3,7 +3,7 @@ import data.assignment_data as dh
 import numpy as np
 
 def plotter(results: tuple):
-    z, T_profiles, z_NB, z_D, T_co_methods, void_fraction = results
+    z, T_profiles, z_NB, z_D, T_co_methods, void_fraction, cladding_temp = results
     
     plt.figure()
     plt.title('Temperature profiles')
@@ -39,6 +39,16 @@ def plotter(results: tuple):
     plt.yticks([-dh.H/2,-1,0,1,dh.H/2],['-H/2','-1','0','1','H/2'])
     plt.ylim((-dh.H/2,dh.H/2)) 
     plt.grid()
+    
+    plt.figure()
+    plt.title('Temperature distribution in the cladding')
+    R, Z = np.meshgrid(np.linspace((dh.D_fuel_road-2*dh.t_cladding)/2,dh.D_fuel_road/2),z, indexing='ij')
+    plt.pcolormesh(R, Z, cladding_temp, shading='auto', cmap='hot')
+    plt.colorbar(label='Temperature [°C]')
+    plt.xlabel('Radius')
+    plt.ylabel('Axial coordinate [m]')
+    plt.yticks([-dh.H/2,-1,0,1,dh.H/2],['-H/2','-1','0','1','H/2'])
+    plt.xticks([(dh.D_fuel_road-2*dh.t_cladding)/2,dh.D_fuel_road/2],[r'r$_{c,i}$',r'r$_{c,o}$'])
       
     plt.show()
         

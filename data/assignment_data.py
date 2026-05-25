@@ -19,6 +19,14 @@ D_fuel_road = 0.374*cs.inch     # m, fuel road outer diameter
 t_gap = 0.0065*cs.inch          # m, gap between fuel and cladding
 t_cladding = 0.0225*cs.inch     # m, cladding thickness
 
+# Gap conductance
+Ross_Stoute_const = 2.54e-5     # m
+A_kHe = 0.1763e-2
+N_kHe = 0.77163
+
+# Cladding
+poisson_zircaloy = 0.43
+
 # Coolant flow
 mass_flow_coolant = 106.8*1e6*cs.lb/3600                # kg/s, effective mass flow rate in the core
 A_flow_coolant = 41.8*cs.foot**2                        # m^2, effective flow area

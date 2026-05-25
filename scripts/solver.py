@@ -141,16 +141,34 @@ def solver() -> tuple:
             void_fraction[i] = alpha_Maurer * (z_actual - z_NB) / (z_D - z_NB)
     
     # Inner cladding temperature 
-    q_rad_cladding = [qv(z)*A_subchannel/(2*cs.pi)*np.log(dh.D_fuel_road/(dh.D_fuel_road-2*dh.t_cladding)) for z in z_vector] # W/m
+    r_in_cladding = (dh.D_fuel_road-2*dh.t_cladding)/2
+    # q_rad_cladding = [qv(z)*A_subchannel/(2*cs.pi)*np.log(dh.D_fuel_road/2/r_in_cladding) for z in z_vector] # W/m
     
-    # K_cladding constants
+    # Cladding radial profile temperature is needed to compute the thermal elastic expansion
+    q_rad_cladding_radial = [[qv(z)*A_subchannel/(2*cs.pi)*np.log(dh.D_fuel_road/2/r) for z in z_vector] 
+                      for r in np.linspace(r_in_cladding, dh.D_fuel_road/2)]
+    
+    # k_cladding constants
     B = 11.45
     A = 1.425e-2 / 2
     
     # Integral term with outer cladding temp
     kT_co = [A*Tz**2 + B*Tz for Tz in T_co]
-    C = [- kTz - qz for kTz,qz in zip(kT_co, q_rad_cladding)]
+    C = [[- kTz - qz for kTz,qz in zip(kT_co, q_rad_cladding)] 
+         for q_rad_cladding in q_rad_cladding_radial]
     
-    T_ci = list((-B + np.sqrt(B**2 - 4 * A * Cz))/2/A for Cz in C)
+    T_c_rad = [[(-B + np.sqrt(B**2 - 4 * A * Cz))/2/A for Cz in Cr] for Cr in C]
+    
+    T_ci = T_c_rad[0]
+    
+    # ================================================    
+    # 8- Evaluation of the temperature on the surface of the fuel pellet
+    # Cladding thickness after deformation
+    
+    gamma = dh.D_fuel_road/2/r_in_cladding
+    
+    E_zircaloy = lambda T: 1.148e11 - 5.99e7*T  # [T] in K
+    
 
-    return z_vector, [Coolant_profs['T'], T_co, T_ci], z_NB, z_D, [T_co_SP, T_co_JL], void_fraction
+
+    return z_vector, [Coolant_profs['T'], T_co, T_ci], z_NB, z_D, [T_co_SP, T_co_JL], void_fraction, T_c_rad
