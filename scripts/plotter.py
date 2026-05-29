@@ -42,7 +42,7 @@ def plotter(results: tuple):
     
     plt.figure()
     plt.title('Temperature distribution in the cladding')
-    R, Z = np.meshgrid(np.linspace((dh.D_fuel_road-2*dh.t_cladding)/2,dh.D_fuel_road/2),z, indexing='ij')
+    R, Z = np.meshgrid(np.linspace((dh.D_fuel_road-2*dh.t_cladding)/2,dh.D_fuel_road/2,dh.n_points),z, indexing='ij')
     plt.pcolormesh(R, Z, cladding_temp, shading='auto', cmap='hot')
     plt.colorbar(label='Temperature [°C]')
     plt.xlabel('Radius')

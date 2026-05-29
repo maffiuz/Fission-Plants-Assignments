@@ -145,8 +145,9 @@ def solver() -> tuple:
     # q_rad_cladding = [qv(z)*A_subchannel/(2*cs.pi)*np.log(dh.D_fuel_road/2/r_in_cladding) for z in z_vector] # W/m
     
     # Cladding radial profile temperature is needed to compute the thermal elastic expansion
+    r_cladding_vector = np.linspace(r_in_cladding, dh.D_fuel_road/2,dh.n_points)
     q_rad_cladding_radial = [[qv(z)*A_subchannel/(2*cs.pi)*np.log(dh.D_fuel_road/2/r) for z in z_vector] 
-                      for r in np.linspace(r_in_cladding, dh.D_fuel_road/2)]
+                      for r in r_cladding_vector]
     
     # k_cladding constants
     B = 11.45
@@ -163,12 +164,65 @@ def solver() -> tuple:
     
     # ================================================    
     # 8- Evaluation of the temperature on the surface of the fuel pellet
+    # 9- 
+    
     # Cladding thickness after deformation
+    T_ambient = 25
+    T_c_avg = [(integrate.trapezoid([T_c_rad[z][r] for r in range(len(r_cladding_vector))], r_cladding_vector)/(dh.D_fuel_road/2 - r_in_cladding)) 
+               for z in range(len(z_vector))]
+    
+    alpha_cladding = [5.62e-6 + 3.162e-9 * T for T in T_c_avg]
+    r_in_cladding_thexp = [r_in_cladding*(1 + alpha*(T - T_ambient)) for alpha,T in zip(alpha_cladding,T_c_avg)]
     
     gamma = dh.D_fuel_road/2/r_in_cladding
     
     E_zircaloy = lambda T: 1.148e11 - 5.99e7*T  # [T] in K
+    q_rad_fuel = (qv_max * Base_area_fuel_pellet /4/cs.pi * np.cos(cs.pi*z/He) * Robertson_factor for z in z_vector)
     
+    Robertson_factor = 0.96         # -
+    
+    # Fuel temperature iterative solution
+    toll = 1.e-7
+    COUNT = 1000
+    i = 0
+    T_fs = [500 for _ in z_vector]   # °C 
+    T_fcl = [1000 for _ in z_vector]
 
+    # Westinghouse correlation for fuel k
+    A = 11.8/1e-2
+    B = 0.0238/1e-2
+    C = 8.775e-13 * 1e-2
+    
+    # Neglecting z-conduction - solving for each height independently
+    for i in range(len(z_vector)):
+        error_out = 1
+        ii = 0
+        while error_out > toll and ii < COUNT:
+            f_T_f_surface = (1/B*np.log(A+B*T_fs[i]) + C/4*T_fs[i]**4)    # Definite integral
+            
+            # Loop for nonlinear equation
+            iii = 0
+            error_in = 1
+            
+            while error_in > toll and  iii < COUNT:
+                log_part = 1/B*np.log(A+B*T_fcl[i])
+                
+                power_part = q_rad_fuel[i] + f_T_f_surface[i] - log_part
+                
+                T_fcl_new = pow(power_part*4/C, 1/4)
+                
+                error_in = abs(T_fcl_new - T_fcl[i])/T_fcl[i]
+                T_fcl[i] = T_fcl_new
+                iii += 1
+            
+            # TODO fix avg formula 
+            T_f_avg = (T_fcl[i] + T_fs[i])/2
+            T_He_gap = (T_fs[i] + T_ci[i])/2
+            
+            # Fuel thermal expansion
+            
+            
+            
+            ii += 1
 
     return z_vector, [Coolant_profs['T'], T_co, T_ci], z_NB, z_D, [T_co_SP, T_co_JL], void_fraction, T_c_rad
