@@ -7,7 +7,7 @@ def plotter(results: tuple):
     
     plt.figure()
     plt.title('Temperature profiles')
-    plt.plot(np.transpose(T_profiles),z,label=['Coolant','Cladding out','Cladding in'])
+    plt.plot(np.transpose(T_profiles),z,label=['Coolant','Cladding out','Cladding in','Fuel pellet out','Fuel pellet centerline'])
     plt.legend()    
     plt.grid()
     plt.xlabel('Temperature [°C]')
@@ -42,13 +42,13 @@ def plotter(results: tuple):
     
     plt.figure()
     plt.title('Temperature distribution in the cladding')
-    R, Z = np.meshgrid(np.linspace((dh.D_fuel_road-2*dh.t_cladding)/2,dh.D_fuel_road/2,dh.n_points),z, indexing='ij')
+    R, Z = np.meshgrid(np.linspace((dh.D_fuel_rod-2*dh.t_cladding)/2,dh.D_fuel_rod/2,dh.n_points),z, indexing='ij')
     plt.pcolormesh(R, Z, cladding_temp, shading='auto', cmap='hot')
     plt.colorbar(label='Temperature [°C]')
     plt.xlabel('Radius')
     plt.ylabel('Axial coordinate [m]')
     plt.yticks([-dh.H/2,-1,0,1,dh.H/2],['-H/2','-1','0','1','H/2'])
-    plt.xticks([(dh.D_fuel_road-2*dh.t_cladding)/2,dh.D_fuel_road/2],[r'r$_{c,i}$',r'r$_{c,o}$'])
+    plt.xticks([(dh.D_fuel_rod-2*dh.t_cladding)/2,dh.D_fuel_rod/2],[r'r$_{c,i}$',r'r$_{c,o}$'])
       
     plt.show()
         

@@ -15,7 +15,7 @@ Q2_avg = 199300*cs.Btu/cs.foot**2/3600  # Wm^-2, average heat flux
 # Fuel pellets
 N_rods = 41448                  # -, number of fuel rods
 D_fuel_pellet = 0.3225*cs.inch  # m, fuel pellet diameter
-D_fuel_road = 0.374*cs.inch     # m, fuel road outer diameter
+D_fuel_rod = 0.374*cs.inch     # m, fuel road outer diameter
 t_gap = 0.0065*cs.inch          # m, gap between fuel and cladding
 t_cladding = 0.0225*cs.inch     # m, cladding thickness
 
@@ -23,9 +23,10 @@ t_cladding = 0.0225*cs.inch     # m, cladding thickness
 Ross_Stoute_const = 2.54e-5     # m
 A_kHe = 0.1763e-2
 N_kHe = 0.77163
+p_helium_gap = 70.e5            # Pa
 
 # Cladding
-poisson_zircaloy = 0.43
+nu_zircaloy = 0.43
 
 # Coolant flow
 mass_flow_coolant = 106.8*1e6*cs.lb/3600                # kg/s, effective mass flow rate in the core
