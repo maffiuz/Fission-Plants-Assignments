@@ -11,6 +11,7 @@ heat_in_fuel = 0.974            # -, heat generated in fuel
 Fq = 2.6                        # -, heat flux hot channel factor
 P = 3400e6                      # W, reactor core heat output
 Q2_avg = 199300*cs.Btu/cs.foot**2/3600  # Wm^-2, average heat flux
+n_grids = 10
 
 # Fuel pellets
 N_rods = 41448                  # -, number of fuel rods
