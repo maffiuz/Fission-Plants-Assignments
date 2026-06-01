@@ -4,9 +4,7 @@ from scipy.integrate import trapezoid
 from scipy.optimize import fsolve
 from scipy.interpolate import make_interp_spline
 import numpy as np
-# import data.pipe_handler as pp
 import data.assignment_data as dh
-# import scripts.correlations as rr
 
 def solver() -> tuple:
     # Problem setup
