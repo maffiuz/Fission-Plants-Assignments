@@ -283,7 +283,7 @@ def solver():
         Core_losses = dh.DeltaP_Vessel/dh.mass_rate_reference**2
         
         # Gravitational potential
-        Core_potential = - cs.g * (rho_cold + (rho_cold-rho_hot)/2)* dh.H2_PSC
+        Core_potential = - cs.g * (rho_cold - (rho_cold-rho_hot)/2)* dh.H2_PSC
         Potential = (rho_ave *dh.Dout_HX1 + rho_cold *(dh.H1_PSC + dh.H2_PSC - dh.Dout_HX1) - rho_hot * dh.H1_PSC) * cs.g + Core_potential
         
         # New mass rate
