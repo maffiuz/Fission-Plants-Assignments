@@ -8,6 +8,7 @@ pyfluids = "*"
 pandas = "*"
 scipy = "*"
 matplotlib = "*"
+numpy = "*"
 
 [dev-packages]
 
