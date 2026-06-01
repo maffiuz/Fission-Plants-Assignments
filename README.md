@@ -1,4 +1,4 @@
-# Nuclear Fission Plant Assignment 3
+# Nuclear Fission Plants Assignment 3
 
 This repository collects all assignments of the Nuclear Fission Plants course. Each assignment is contained in its own dedicated branch. Here, the solution of assignment 3 is contained
 
