@@ -4,7 +4,7 @@ from scripts.plotter import plotter
 
 def main():
     sol = solver()
-    plotter(sol)
+    # plotter(sol)
     
 if __name__ == "__main__":
     main()

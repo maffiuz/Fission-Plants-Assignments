@@ -1,6 +1,6 @@
-# Nuclear Fission Plant Assignment 2
+# Nuclear Fission Plant Assignment 3
 
-This repository collects all assignments of the Nuclear Fission Plants course. Each assignment is contained in its own dedicated branch. Here, the solution of assignment 2 is contained
+This repository collects all assignments of the Nuclear Fission Plants course. Each assignment is contained in its own dedicated branch. Here, the solution of assignment 3 is contained
 
 ## Setup
 1. Make sure you have `pipenv` installed. Otherwise you can install it using the regular `pip` command:
