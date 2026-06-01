@@ -162,6 +162,11 @@ def solver() -> tuple:
     
     T_c_rad = [[(-B + np.sqrt(B**2 - 4 * A * Cz))/2/A for Cz in Cr] for Cr in C]
     
+    # Exporting cladding average temperature for assignment 3
+    with open('data/T_cladding_avg','w') as f:
+        f.write('Rows = r, cols = z\n')
+        np.savetxt(f,T_c_rad)
+    
     T_ci = T_c_rad[0]
     
     # ================================================    
