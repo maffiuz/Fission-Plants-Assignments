@@ -98,7 +98,8 @@ def solver() -> tuple:
     T_co = [min(SP, JL) for SP,JL in zip(T_co_SP, T_co_JL)]
     
     # Finding the start of the subcooled boiling region
-    z_NB = next(z_vector[i] for i in range(len(z_vector)) if T_co_SP[i] > T_co_JL[i])
+    index_NB = next(i for i in range(len(z_vector)) if T_co_SP[i] > T_co_JL[i])
+    z_NB = z_vector[index_NB]
     
     # Finding the detachment
     Tl_D = [(T_sat - q/5/h) for q,h in zip(q2_hot_subchannel, Coolant_profs['h'])]
@@ -257,15 +258,13 @@ def solver() -> tuple:
     # ================================================        
     # 10 - Critical heat flux
     
-    
-    
     # Uniform heat flux - W3
     p_mPa = dh.p_coolant*1e-6
     qc_w3 = ((2.022 - 0.06238*p_mPa) + (0.1722 - 0.01427*p_mPa)*np.exp((18.177 - 0.5987*p_mPa)*x_eq)) *\
         ((0.1484 - 1.596*x_eq + 0.1729*x_eq*np.abs(x_eq))*2.326*G_avg + 3271) *\
         (1.157 - 0.869*x_eq) *\
         (0.2664 + 0.8357*np.exp(-124.1*D_eq)) *\
-        (0.8285 + 0.0003413*(enthalpy_sat_water - enthalpy_in))
+        (0.8285 + 0.0003413*((enthalpy_sat_water - enthalpy_in)*1e-3))
         
     p_psi = dh.p_coolant/cs.psi
     G_avg_freedom = G_avg/cs.lb*cs.foot**2*3600
@@ -281,6 +280,31 @@ def solver() -> tuple:
     q_EU = 0.88*Fs*qc_w3*1e3   # W/m2
     
     # Non uniform heat flux - Tong
+    G_avg_Tong = G_avg_freedom*1.e-6
+    F = [1 for _ in z_vector] 
     
+    for i in range(index_NB+1,len(z_vector)):
+        C_freedom = 0.15 * pow(1-x_eq[i],4.31) / pow(G_avg_Tong, 0.478)
+        C = C_freedom/cs.inch
+        
+        # Integral from z_NB to current point
+        z_prime = z_vector[index_NB:i+1]
+        q_prime = q2_hot_subchannel[index_NB:i+1]
+        integral = trapezoid(q_prime * np.exp(-C* (z_vector[i] - z_prime)), z_prime)
+        
+        F[i] = C * integral / (q2_hot_subchannel[i] * (1 - np.exp(-C*(z_vector[i]-z_NB))))
+        
+    q_NU = q_EU/F
+    
+    # ================================================      
+    # 11- DNBR
 
-    return z_vector, [Coolant_profs['T'], T_co, T_ci, T_fs, T_fcl], z_NB, z_D, [T_co_SP, T_co_JL], void_fraction, T_c_rad
+    DNBR = q_NU/q2_hot_subchannel
+    MDNBR = min(DNBR)
+    
+    print(f'MDNBR = {MDNBR}\nMinumum by design = 1.30')
+
+    return z_vector, [Coolant_profs['T'], T_co, T_ci, T_fs, T_fcl], z_NB, z_D,\
+        [T_co_SP, T_co_JL], void_fraction, T_c_rad,\
+        [r_out_fuel_th_exp, r_in_cladding_deformed, dh.D_fuel_pellet/2, r_in_cladding],\
+        [q2_hot_subchannel,q_EU,q_NU]

@@ -3,7 +3,7 @@ import data.assignment_data as dh
 import numpy as np
 
 def plotter(results: tuple):
-    z, T_profiles, z_NB, z_D, T_co_methods, void_fraction, cladding_temp = results
+    z, T_profiles, z_NB, z_D, T_co_methods, void_fraction, cladding_temp, gap_details, q_C = results
     
     plt.figure()
     plt.title('Temperature profiles')
@@ -49,6 +49,30 @@ def plotter(results: tuple):
     plt.ylabel('Axial coordinate [m]')
     plt.yticks([-dh.H/2,-1,0,1,dh.H/2],['-H/2','-1','0','1','H/2'])
     plt.xticks([(dh.D_fuel_rod-2*dh.t_cladding)/2,dh.D_fuel_rod/2],[r'r$_{c,i}$',r'r$_{c,o}$'])
-      
+    
+    plt.figure()
+    plt.title('Thermal deformation of fuel-cladding gap')
+    plt.plot(np.transpose(gap_details[0:2]), z, label=['r$_{f,s,th}$','r$_{c,i,th+el}$'])
+    plt.axvline(gap_details[2],ls='--',c='black')
+    plt.axvline(gap_details[3],ls='--',c='black')
+    plt.legend()
+    plt.ylabel('Axial coordinate [m]')
+    plt.xlabel(r'Radial deformation [m]')
+    plt.yticks([-dh.H/2,-1,0,1,dh.H/2],['-H/2','-1','0','1','H/2'])
+    plt.ylim((-dh.H/2,dh.H/2)) 
+    tick = [gap_details[2] + i/10*(gap_details[3] - gap_details[2]) for i in range(0,11)]
+    tick_labl = [r'r$_{f,s}$'] + [f'{i}%' for i in range(10,100,10)] + [r'r$_{c,i}$']
+    plt.xticks(tick,tick_labl)
+    plt.grid()
+    
+    plt.figure()
+    plt.title('Critical heat flux')
+    plt.plot(np.transpose(q_C),z,label=['q$^{''}$ actual','q$_{c,EU}$ W3','q$_{c,NU}$'])
+    plt.legend()
+    plt.ylabel('Axial coordinate [m]')
+    plt.xlabel(r'Radial deformation [m]')
+    plt.yticks([-dh.H/2,-1,0,1,dh.H/2],['-H/2','-1','0','1','H/2'])
+    plt.grid()
+     
     plt.show()
         
