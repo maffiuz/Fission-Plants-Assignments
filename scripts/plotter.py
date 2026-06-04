@@ -27,7 +27,7 @@ def plots_point_a():
     computed_h = computed_h[index_h:]
     
     # h plot
-    plt.figure()
+    plt.figure(figsize=(8,5))
     plt.plot(D_pipes, computed_h, "ro--", label="h")
     plt.xticks(D_pipes, Pipe_names)
     plt.axhline(y=dh.L, color='k', linestyle='--', linewidth=2, label="Max pipe lenght")
@@ -60,7 +60,7 @@ def plots_point_b():
     v_steam_b = v_steam_b[index_h:]
     
     # h and steam v plot
-    plt.figure()
+    plt.figure(figsize=(8,5))
     plt.plot(D_pipes, computed_h_b, "ro-", label="Minimum h")
     plt.xticks(D_pipes, Pipe_names)
     plt.yticks(color='r')
@@ -77,8 +77,8 @@ def plots_point_b():
     # Plotting the relative difference from the results computed in point a
     # To show that removing the horizontal isn't always beneficial
     Delta_h_rel = np.array(computed_h_b) / np.array(computed_h_a) - 1
-    plt.figure()
-    plt.plot(D_pipes, Delta_h_rel, "bo", label="Minimum h")
+    plt.figure(figsize=(8,5))
+    plt.plot(D_pipes, Delta_h_rel, "bo--", label="Minimum h")
     plt.xticks(D_pipes, Pipe_names)
     plt.xlabel("D [in]")
     plt.ylabel("$\Delta_h / h_a$ [-]")
@@ -112,8 +112,8 @@ def plots_point_c():
     # Plotting the relative difference from the results computed in point b
     # To show the difference of rough pipes
     Delta_h_rel = np.array(computed_h_c) / np.array(computed_h_b) - 1
-    plt.figure()
-    plt.plot(D_pipes, Delta_h_rel, "bo", label="Minimum h")
+    plt.figure(figsize=(8,5))
+    plt.plot(D_pipes, Delta_h_rel, "bo--", label="Minimum h")
     plt.xticks(D_pipes, Pipe_names)
     plt.xlabel("D [in]")
     plt.ylabel("$\Delta_h / h_b$ [-]")
