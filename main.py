@@ -1,6 +1,5 @@
 # Main assignment handler
 from scripts.solver import solver
-from scripts.plotter import plotter
 
 def main():
     solver()
