@@ -1,0 +1,22 @@
+Pressure drop location,Pressure drop value [Pa]
+ISC - Driving buoyancy,1562.1647
+ISC - Total pressure drop,1562.1647
+ISC - Hot leg 90 deg bends (per bend),141.2592
+ISC - Cold leg 90 deg bends (per bend),139.0635
+ISC - Distributed hot leg losses,257.6392
+ISC - Distributed cold leg losses,255.9527
+HX1-ISC - Shell losses,124.5517
+HX2-ISC - Total losses,363.3756
+HX2-ISC - Local losses,119.5804
+HX2-ISC - Distributed losses,243.7952
+PSC - Driving buoyancy,1649.5214
+PSC - Total pressure losses,1649.5214
+PSC - Pressure vessel losses,41.2847
+PSC - Hot leg 90 deg bends (per bend),87.9822
+PSC - Cold leg 90 deg bends (per bend),86.1467
+PSC - Cold leg valve,22.9725
+PSC - Distributed hot leg losses,64.6789
+PSC - Distributed cold leg losses,64.0967
+HX1-PSC - Total losses,1108.2308
+HX1-PSC - Local losses,359.3422
+HX1-PSC - Distributed losses,748.8886

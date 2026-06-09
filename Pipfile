@@ -5,10 +5,10 @@ name = "pypi"
 
 [packages]
 pyfluids = "*"
-pandas = "*"
 scipy = "*"
 matplotlib = "*"
 numpy = "*"
+pandas = "*"
 
 [dev-packages]
 

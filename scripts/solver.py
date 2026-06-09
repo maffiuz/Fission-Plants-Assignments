@@ -4,6 +4,7 @@ import data.pipe_handler as pp
 import data.assignment_data as dh
 import scripts.correlations as rr
 import math as m
+import pandas as pd
 
 def solver():
     # Problem setup
@@ -153,6 +154,53 @@ def solver():
     Pr_shell = w_ave.prandtl
     kth_shell = w_ave.conductivity
     
+    # Writing all useful data on .csv
+    data = {
+        'Pressure drop location':[],
+        'Pressure drop value [Pa]':[]
+    }
+    
+    # ISC buoyancy
+    data['Pressure drop location'].append('ISC - Driving buoyancy')
+    data['Pressure drop value [Pa]'].append(Potential)
+        
+    # ISC total losses
+    data['Pressure drop location'].append('ISC - Total pressure drop')
+    data['Pressure drop value [Pa]'].append((Hot_losses + Cold_losses + Shell_HX1_losses + HX2_losses)*mass_flow_ISC**2)
+    
+    # ISC hot leg bends
+    data['Pressure drop location'].append('ISC - Hot leg 90 deg bends (per bend)')
+    data['Pressure drop value [Pa]'].append(loc_90_H*mass_flow_ISC**2)
+    
+    # ISC cold leg bends
+    data['Pressure drop location'].append('ISC - Cold leg 90 deg bends (per bend)')
+    data['Pressure drop value [Pa]'].append(loc_90_C*mass_flow_ISC**2)
+    
+    # ISC distributed losses hot leg
+    data['Pressure drop location'].append('ISC - Distributed hot leg losses')
+    data['Pressure drop value [Pa]'].append(dist_H_leg*mass_flow_ISC**2)
+    
+    # ISC distributed losses cold leg
+    data['Pressure drop location'].append('ISC - Distributed cold leg losses')
+    data['Pressure drop value [Pa]'].append(dist_C_leg*mass_flow_ISC**2)
+    
+    # HX1 losses
+    data['Pressure drop location'].append('HX1-ISC - Shell losses')
+    data['Pressure drop value [Pa]'].append(Shell_HX1_losses*mass_flow_ISC**2)
+    
+    # HX2 total losses
+    data['Pressure drop location'].append('HX2-ISC - Total losses')
+    data['Pressure drop value [Pa]'].append(HX2_losses*mass_flow_ISC**2)
+    
+    # HX1 local losses
+    data['Pressure drop location'].append('HX2-ISC - Local losses')
+    data['Pressure drop value [Pa]'].append(HX2_loc_losses*mass_flow_ISC**2)
+    
+    # HX1 distributed losses
+    data['Pressure drop location'].append('HX2-ISC - Distributed losses')
+    data['Pressure drop value [Pa]'].append(HX2_distrubed_losses*mass_flow_ISC**2)
+
+    
     # ================================
     # PSC ----------------------------
     # ================================    
@@ -273,11 +321,12 @@ def solver():
         coeff_com_header_HX1 = 0.5*com_header_HX1/rho_hot/(cs.pi*Din_HX1**2/4*dh.Ntubes_HX1)**2
         coeff_exp_HX1_header = 0.5*exp_HX1_header/rho_cold/(cs.pi*Din_HX1**2/4*dh.Ntubes_HX1)**2
         coeff_com_header_pipe = 0.5*com_header_pipe/rho_cold/(cs.pi*Din_PSC**2/4)**2
+        HX1_local_losses = 2*loc_90_HX1 + coeff_exp_pipe_header + coeff_com_header_HX1 + coeff_exp_HX1_header + coeff_com_header_pipe
         # Distributed pressure drop coefficient
         f_HX1 = rr.friction_rough(Re_pipes_HX1,dh.epsilon_rel_HX1)
         HX1_distrubed_losses = rr.distributed_loss_coeff(dh.Ltubes_HX1,Din_HX1,f_HX1,rho_ave)/dh.Ntubes_HX1**2
         
-        HX1_losses = 2*loc_90_HX1 + coeff_exp_pipe_header + coeff_com_header_HX1 + coeff_exp_HX1_header + coeff_com_header_pipe + HX1_distrubed_losses
+        HX1_losses = HX1_local_losses + HX1_distrubed_losses
         
         # Losses inside the reactor core
         Core_losses = dh.DeltaP_Vessel/dh.mass_rate_reference**2
@@ -298,4 +347,55 @@ def solver():
     print('---------------------------------------------------------')
     print(f'PSC iteration complete:\nmass flow rate = {mass_flow:.4f} kg/s\nAverage temperature = {T_avg:.4f} °C\nHot channel temperature = {T_hot:.4f} °C')
     print('---------------------------------------------------------')
+    
+    mass_flow_PSC = mass_flow
+    
+    # PSC buoyancy
+    data['Pressure drop location'].append('PSC - Driving buoyancy')
+    data['Pressure drop value [Pa]'].append(Potential)
+    
+    # PSC total losses
+    data['Pressure drop location'].append('PSC - Total pressure losses')
+    data['Pressure drop value [Pa]'].append((Hot_losses + Cold_losses + HX1_losses + Core_losses)*mass_flow_PSC**2)
+    
+    # Core
+    data['Pressure drop location'].append('PSC - Pressure vessel losses')
+    data['Pressure drop value [Pa]'].append(Core_losses*mass_flow_PSC**2)
+    
+    # PSC hot leg bends
+    data['Pressure drop location'].append('PSC - Hot leg 90 deg bends (per bend)')
+    data['Pressure drop value [Pa]'].append(loc_90_H*mass_flow_PSC**2)
+    
+    # PSC cold leg bends
+    data['Pressure drop location'].append('PSC - Cold leg 90 deg bends (per bend)')
+    data['Pressure drop value [Pa]'].append(loc_90_C*mass_flow_PSC**2)
+    
+    # PSC cold leg valve
+    data['Pressure drop location'].append('PSC - Cold leg valve')
+    data['Pressure drop value [Pa]'].append(valve_loss*mass_flow_PSC**2)
+    
+    # PSC distributed losses hot leg
+    data['Pressure drop location'].append('PSC - Distributed hot leg losses')
+    data['Pressure drop value [Pa]'].append(dist_H_leg*mass_flow_PSC**2)
+    
+    # PSC distributed losses cold leg
+    data['Pressure drop location'].append('PSC - Distributed cold leg losses')
+    data['Pressure drop value [Pa]'].append(dist_C_leg*mass_flow_PSC**2)
+    
+    # HX1 total losses
+    data['Pressure drop location'].append('HX1-PSC - Total losses')
+    data['Pressure drop value [Pa]'].append(HX1_losses*mass_flow_PSC**2)
+    
+    # HX1 local losses
+    data['Pressure drop location'].append('HX1-PSC - Local losses')
+    data['Pressure drop value [Pa]'].append(HX1_local_losses*mass_flow_PSC**2)
+    
+    # HX1 distributed losses
+    data['Pressure drop location'].append('HX1-PSC - Distributed losses')
+    data['Pressure drop value [Pa]'].append(HX1_distrubed_losses*mass_flow_PSC**2)
+    
+    # Output
+    pd.DataFrame(data).to_csv('pressure_drops.csv',index=False, float_format='%.4f')
+    
+    
     
