@@ -4,7 +4,7 @@ from scipy.integrate import trapezoid
 import numpy as np
 import data.assignment_data as dh
 
-def solver() -> tuple:
+def solver():
     # Problem setup
     
     #=================================================
@@ -163,8 +163,7 @@ def solver() -> tuple:
     print(f'p = {p_H2O/1e6:.2f} MPa')
     print(f'real p = {p_H2O_real/1e6:.2f} MPa')
     print(f'relative error = {100*err:.2f} %')
-    
-    return 0
+
 
 # Handling integral averages over a annulus
 def integral_avg(x, y):
