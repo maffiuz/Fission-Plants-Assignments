@@ -56,6 +56,12 @@ def solver():
     # 3- Mechanical stresses 
     
     Sm = min(2/3*dh.sigma_yield, 1/3*dh.sigma_ultimate)
+
+    print('\n===========================================')
+    print('Pressure analysis')
+    print(f'Buckling critical pressure: p = {p_cr:.3f} MPa')
+    print(f'Mariotte\'s formula: p = {p_internal_mariotte:.3f} MPa')
+    print(f'Lamé\'s formula: p = {p_internal_lame:.3f} MPa')
       
     p_internal = min(p_cr, p_internal_mariotte, p_internal_lame)
     p_external = dh.p_coolant
@@ -100,6 +106,21 @@ def solver():
     sigma_hoop_secondary_out = np.array([sigma_hoop_avg + sigma_out_th for sigma_out_th in sigma_hoop_th_out_vec])
     sigma_axial_secondary_out = np.array([sigma_axial_avg + sigma_out_th for sigma_out_th in sigma_axial_th_out_vec])
     sigma_radial_secondary_in = sigma_radial_secondary_out = sigma_radial_avg
+    
+    print('\n===========================================')
+    print('Stress details - mechanical stresses (MPa):')
+    print(f'Sigma hoop: in = {sigma_hoop_in:.3f}\t out = {sigma_hoop_out:.3f}')
+    print(f'Sigma radial: in = {sigma_radial_in:.3f}\t out = {sigma_radial_out:.3f}')
+    print(f'Sigma axial: in = {sigma_axial_in:.3f}\t out = {sigma_axial_out:.3f}')
+    print('\n\nStress details - thermal stresses (MPa):')
+    print(f'Sigma hoop: in = {np.average(sigma_hoop_th_in_vec):.3f}\t out = {np.average(sigma_hoop_th_out_vec):.3f}')
+    print(f'Sigma radial: in = 0.000\t out = 0.000')
+    print(f'Sigma axial: in = {np.average(sigma_axial_th_in_vec):.3f}\t out = {np.average(sigma_axial_th_out_vec):.3f}')
+    print('\n\nStress details - total stresses (MPa):')
+    print(f'Sigma hoop: in = {sigma_hoop_in+np.average(sigma_hoop_th_in_vec):.3f}\t out = {sigma_hoop_out+np.average(sigma_hoop_th_out_vec):.3f}')
+    print(f'Sigma radial: in = {sigma_radial_in:.3f}\t out = {sigma_radial_out:.3f}')
+    print(f'Sigma axial: in = {sigma_axial_in+np.average(sigma_axial_th_in_vec):.3f}\t out = {sigma_axial_out+np.average(sigma_axial_th_out_vec):.3f}')
+
     
     #=================================================
     # 5- ASME verification
