@@ -94,13 +94,12 @@ def solver():
         sigma_hoop_th_out_vec.append(-thermal_exp[i]*(1/(K**2 - 1) - 1/(2*np.log(K))))
         sigma_axial_th_out_vec.append(sigma_hoop_th_out_vec[i]*(1+nu[i]))
         
-    sigma_hoop_th_avg = max(sigma_hoop_th_in_vec + sigma_hoop_th_out_vec)/2
-    sigma_axial_th_avg = max(sigma_axial_th_in_vec + sigma_axial_th_out_vec)/2
-    sigma_radial_th_avg = 0.
     
-    sigma_hoop_secondary = sigma_hoop_avg + sigma_hoop_th_avg
-    sigma_axial_secondary = sigma_axial_avg + sigma_axial_th_avg
-    sigma_radial_secondary = sigma_radial_avg + sigma_radial_th_avg
+    sigma_hoop_secondary_in = np.array([sigma_hoop_avg + sigma_in_th for sigma_in_th in sigma_hoop_th_in_vec])
+    sigma_axial_secondary_in = np.array([sigma_axial_avg + sigma_in_th for sigma_in_th in sigma_axial_th_in_vec])
+    sigma_hoop_secondary_out = np.array([sigma_hoop_avg + sigma_out_th for sigma_out_th in sigma_hoop_th_out_vec])
+    sigma_axial_secondary_out = np.array([sigma_axial_avg + sigma_out_th for sigma_out_th in sigma_axial_th_out_vec])
+    sigma_radial_secondary_in = sigma_radial_secondary_out = sigma_radial_avg
     
     #=================================================
     # 5- ASME verification
@@ -110,17 +109,22 @@ def solver():
                             abs(sigma_radial_avg - sigma_axial_avg))
     
     print('===========================================')
-    print('ASME verification for Primary stress')
+    print('ASME verification for Primary stresses')
     print(f'sigma_max = {sigma_max_primary}')
     print(f'Sm = {Sm}')
 
-    sigma_max_secondary = max(abs(sigma_hoop_secondary - sigma_axial_secondary),
-                              abs(sigma_hoop_secondary - sigma_radial_secondary),
-                              abs(sigma_radial_secondary - sigma_axial_secondary))
+    sigma_max_secondary_in = max(np.maximum.reduce([np.abs(sigma_hoop_secondary_in - sigma_axial_secondary_in),
+                              np.abs(sigma_hoop_secondary_in - sigma_radial_secondary_in),
+                              np.abs(sigma_radial_secondary_in - sigma_axial_secondary_in)]))
+    
+    sigma_max_secondary_out = max(np.maximum.reduce([np.abs(sigma_hoop_secondary_out - sigma_axial_secondary_out),
+                              np.abs(sigma_hoop_secondary_out - sigma_radial_secondary_out),
+                              np.abs(sigma_radial_secondary_out - sigma_axial_secondary_out)]))
     
     print('===========================================')
-    print('ASME verification for Secondary stress')
-    print(f'sigma_max = {sigma_max_secondary}')
+    print('ASME verification for Secondary stresses')
+    print(f'sigma_max_in = {sigma_max_secondary_in}')
+    print(f'sigma_max_out = {sigma_max_secondary_out}')
     print(f'3 Sm = {3*Sm}')
     
     #=================================================
