@@ -70,7 +70,7 @@ def plotter(results: tuple):
     plt.plot(np.transpose(q_C),z,label=['q$^{''}$ actual','q$_{c,EU}$ W3','q$_{c,NU}$'])
     plt.legend()
     plt.ylabel('Axial coordinate [m]')
-    plt.xlabel(r'Radial deformation [m]')
+    plt.xlabel(r'Heat flux [Wm$^{-2}$]')
     plt.yticks([-dh.H/2,-1,0,1,dh.H/2],['-H/2','-1','0','1','H/2'])
     plt.grid()
      
