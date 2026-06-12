@@ -61,17 +61,19 @@ def plots_point_b():
     
     # h and steam v plot
     plt.figure(figsize=(8,5))
-    plt.plot(D_pipes, computed_h_b, "ro-", label="Minimum h")
-    plt.xticks(D_pipes, Pipe_names)
+    plt.plot(D_pipes[3:], computed_h_b[3:], "ro-", label="Minimum h")
+    plt.xticks(D_pipes[3:], Pipe_names[3:])
     plt.yticks(color='r')
     plt.xlabel("D [in]")
     plt.ylabel("h [m]")
     plt.grid()
+    plt.ylim((-0.5,50)) 
     
     plt.twinx()
-    plt.plot(D_pipes, v_steam_b, 'g^-', label='Steam v')
+    plt.plot(D_pipes[3:], v_steam_b[3:], 'g^-', label='Steam v')
     plt.yticks(color='g')
-    plt.ylabel("Steam v [m/s]")   
+    plt.ylabel("Steam v [m/s]")  
+
 
     # h diff plot
     # Plotting the relative difference from the results computed in point a
